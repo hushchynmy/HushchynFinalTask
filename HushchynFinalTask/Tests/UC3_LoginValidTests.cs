@@ -1,30 +1,28 @@
 ﻿using HushchynFinalTask.Drivers;
 using HushchynFinalTask.Pages;
-using HushchynFinalTask.Tests;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace HushchynFinalTask.Tests
 {
-    public class UC3_LoginValidTests : BaseTest
+    public class UC3_LoginValidTests(ITestOutputHelper output)
+        : BaseTest(output)
     {
-        public UC3_LoginValidTests(ITestOutputHelper output) : base(output)
+        public static TheoryData<BrowserType, string, string> UC3Data => new()
         {
-        }
-        public static IEnumerable<object[]> GetValidLoginData()
-        {
-            yield return new object[] { BrowserType.Chrome, "standard_user", "secret_sauce" };
-            yield return new object[] { BrowserType.Firefox, "standard_user", "secret_sauce" };
-        }
+            { BrowserType.Chrome, "standard_user", "secret_sauce" },
+            { BrowserType.Firefox, "standard_user", "secret_sauce" },
+        };
 
         [Theory]
-        [MemberData(nameof(GetValidLoginData))]
+        [MemberData(nameof(UC3Data))]
         public void UC3_TestLoginWithValidCredentials(BrowserType browserType, string username, string password)
         {
-            _log.Information($"--- Start UC-3 ({browserType}, User: {username}) ---");
+            this.Log.Information($"--- Start UC-3 ({browserType}, User: {username}) ---");
 
-            var driver = _driverManager.GetDriver(browserType);
-            var loginPage = new LoginPage(driver, _log);
-            var inventoryPage = new InventoryPage(driver, _log);
+            var driver = this.DriverManager.GetDriver(browserType);
+            var loginPage = new LoginPage(driver, this.Log);
+            var inventoryPage = new InventoryPage(driver, this.Log);
 
             loginPage.GoToPage();
             loginPage.TypeUsername(username);
@@ -32,7 +30,7 @@ namespace HushchynFinalTask.Tests
             loginPage.ClickLogin();
             inventoryPage.VerifyOnInventoryPage();
 
-            _log.Information($"--- End UC-3 ({browserType}, User: {username}) ---");
+            this.Log.Information($"--- End UC-3 ({browserType}, User: {username}) ---");
         }
     }
 }

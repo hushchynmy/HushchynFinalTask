@@ -6,24 +6,26 @@ namespace HushchynFinalTask.Pages
 {
     public abstract class BasePage
     {
-        protected IWebDriver Driver { get; }
-        protected ILogger Log { get; }
-        protected WebDriverWait Wait { get; }
-
         protected BasePage(IWebDriver driver, ILogger logger)
         {
-            Driver = driver;
-            Log = logger;
-            Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
+            this.Driver = driver;
+            this.Log = logger;
+            this.Wait = new WebDriverWait(this.Driver, TimeSpan.FromSeconds(10));
         }
+
+        protected IWebDriver Driver { get; }
+
+        protected ILogger Log { get; }
+
+        protected WebDriverWait Wait { get; }
 
         protected void ClickWhenReady(By locator)
         {
             try
             {
-                Log.Debug($"Waiting for element to be clickable: {locator}");
+                this.Log.Debug($"Waiting for element to be clickable: {locator}");
 
-                IWebElement element = Wait.Until(driver =>
+                IWebElement element = this.Wait.Until(driver =>
                 {
                     try
                     {
@@ -32,6 +34,7 @@ namespace HushchynFinalTask.Pages
                         {
                             return elem;
                         }
+
                         return null;
                     }
                     catch (NoSuchElementException)
@@ -44,23 +47,65 @@ namespace HushchynFinalTask.Pages
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Failed to click element: {locator}");
+                this.Log.Error(ex, $"Failed to click element: {locator}");
+                throw;
+            }
+        }
+
+        protected void SendKeysWhenReady(By locator, string text)
+        {
+            try
+            {
+                this.Log.Debug($"Waiting for element to be visible: {locator}");
+                var element = this.WaitForElementVisible(locator);
+                element.Clear();
+                element.SendKeys(text);
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, $"Failed to enter text '{text}' into element: {locator}");
+                throw;
+            }
+        }
+
+        protected void ClearInput(By locator)
+        {
+            var element = this.WaitForElementVisible(locator);
+            element.Click();
+            element.SendKeys(Keys.Control + "a");
+            element.SendKeys(Keys.Delete);
+            _ = this.Wait.Until(d => string.IsNullOrEmpty(d.FindElement(locator).GetAttribute("value")));
+
+            this.Log.Debug($"Field {locator} cleared using SendKeys.");
+        }
+
+        protected string GetTextWhenVisible(By locator)
+        {
+            try
+            {
+                this.Log.Debug($"Waiting for text from element: {locator}");
+                var element = this.WaitForElementVisible(locator);
+                return element.Text;
+            }
+            catch (Exception ex)
+            {
+                this.Log.Error(ex, $"Failed to get text from element: {locator}");
                 throw;
             }
         }
 
         private IWebElement WaitForElementVisible(By locator)
         {
-            return Wait.Until(driver =>
+            return this.Wait.Until(driver =>
             {
                 try
                 {
                     var elem = driver.FindElement(locator);
-
                     if (elem != null && elem.Displayed)
                     {
                         return elem;
                     }
+
                     return null;
                 }
                 catch (NoSuchElementException)
@@ -68,48 +113,6 @@ namespace HushchynFinalTask.Pages
                     return null;
                 }
             });
-        }
-
-        protected void SendKeysWhenReady(By locator, string text)
-        {
-            try
-            {
-                Log.Debug($"Waiting for element to be visible: {locator}");
-                var element = WaitForElementVisible(locator);
-                element.Clear();
-                element.SendKeys(text);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"Failed to enter text '{text}' into element: {locator}");
-                throw;
-            }
-        }
-
-        protected void ClearInput(By locator)
-        {
-            var element = WaitForElementVisible(locator);
-            element.Click();
-            element.SendKeys(Keys.Control + "a");
-            element.SendKeys(Keys.Delete);
-            Wait.Until(d => d.FindElement(locator).GetAttribute("value") == "");
-
-            Log.Debug($"Field {locator} cleared using SendKeys.");
-        }
-
-        protected string GetTextWhenVisible(By locator)
-        {
-            try
-            {
-                Log.Debug($"Waiting for text from element: {locator}");
-                var element = WaitForElementVisible(locator);
-                return element.Text;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"Failed to get text from element: {locator}");
-                throw;
-            }
         }
     }
 }

@@ -5,41 +5,35 @@ using Xunit.Abstractions;
 
 namespace HushchynFinalTask.Tests
 {
-    public abstract class BaseTest : IDisposable
+    public abstract class BaseTest(ITestOutputHelper output)
+        : IDisposable
     {
-        protected readonly ILogger _log;
-        protected readonly DriverManager _driverManager;
+        private bool disposed;
 
-        private bool _disposed = false;
+        protected ILogger Log { get; } = LogHelper.CreateLogger(output);
 
-        protected BaseTest(ITestOutputHelper output)
+        protected DriverManager DriverManager { get; } = new DriverManager();
+
+        public void Dispose()
         {
-            _log = LogHelper.CreateLogger(output);
-            _driverManager = new DriverManager();
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (this.disposed)
             {
-                if (disposing && _driverManager != null)
-                {
-                        _driverManager.QuitDriver();
-                        _log.Information("Browser closed.");
-                }
-                _disposed = true;
+                return;
             }
-        }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+            if (disposing)
+            {
+                this.DriverManager?.QuitDriver();
+                this.Log.Information("Browser closed.");
+            }
 
-        ~BaseTest()
-        {
-            Dispose(false);
+            this.disposed = true;
         }
     }
 }

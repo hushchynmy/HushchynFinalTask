@@ -6,35 +6,35 @@ namespace HushchynFinalTask.Drivers
 {
     public class DriverManager
     {
-
-        private IWebDriver? _driver;
+        private IWebDriver? driver;
 
         public IWebDriver GetDriver(BrowserType browserType)
         {
-            if (_driver == null)
+            if (this.driver == null)
             {
-                _driver = CreateDriver(browserType);
-                _driver.Manage().Window.Maximize();
+                this.driver = CreateDriver(browserType);
+                this.driver.Manage().Window.Maximize();
             }
-            return _driver;
+
+            return this.driver;
         }
 
         public void QuitDriver()
         {
-            if (_driver != null)
+            if (this.driver != null)
             {
                 try
                 {
-                    _driver.Quit();
-                    _driver.Dispose();
+                    this.driver.Quit();
+                    this.driver.Dispose();
                 }
-                catch (Exception ex)
+                catch (WebDriverException ex)
                 {
                     Console.WriteLine($"Error quitting driver: {ex.Message}");
                 }
                 finally
                 {
-                    _driver = null;
+                    this.driver = null;
                 }
             }
         }

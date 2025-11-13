@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HushchynFinalTask.Drivers
+﻿namespace HushchynFinalTask.Drivers
 {
     public enum BrowserType
     {
         Chrome,
-        Firefox
+        Firefox,
     }
 }
